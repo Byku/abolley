@@ -5,7 +5,9 @@ package
 	import flash.events.*;
 	import flash.text.*;
 	import flash.utils.Timer;
-	import nape.constraint.*;
+
+import nape.callbacks.CbType;
+import nape.constraint.*;
 	import nape.phys.*;
 	import nape.shape.*;
 	import nape.space.*;
@@ -39,7 +41,7 @@ package
 		
 		//определяет, куда идти компьютеру
 		public var ballPosition:Number;
-		public var playerPosition:Number;
+		public var playerPosition:Number
 		
 		//максимальная высота прыжка
 		private const maxJumpPower:Number = 950;
@@ -196,9 +198,10 @@ package
 			for (var i:int = 0; i < space.bodies.length; ++i){		
 				if (space.bodies.at(i).cbType.userData == "ball"){
 					trace(space.bodies.at(i).position.x);
+					return;
 				}
 			}
-		};
+		}
 
 	
 		public function goal():void {
@@ -264,15 +267,16 @@ package
 		public function onePlayerMove ():void {
 			
 			for (var i:int = 0; i < space.bodies.length; ++i){
-				if (space.bodies.at(i).cbType.userData == "ball") {
-					//if (space.bodies.at(i).position.x > Main.stageWidth / 2){
+				if (space.bodies.at(i).cbType) {
+					if (space.bodies.at(i).cbType.userData == "ball") {
+						//if (space.bodies.at(i).position.x > Main.stageWidth / 2){
 						ballPosition = space.bodies.at(i).position.x;
-					//}
+						//}
+					}
+					if (space.bodies.at(i).cbType.userData == "leftPlayer") {
+						playerPosition = space.bodies.at(i).position.x;
+					}
 				}
-				if (space.bodies.at(i).cbType.userData == "leftPlayer") {
-					playerPosition = space.bodies.at(i).position.x;
-				}
-					
 			}
 			//
 			//trace(ballPosition + ' ' + playerPosition);
@@ -403,8 +407,9 @@ package
 		
 		public function heroStop():void	{
 			for (var i:int = 0; i < space.bodies.length; ++i)
-				{	
-					if (space.bodies.at(i).cbType.userData == "rightPlayer")
+				{
+					if(space.bodies.at(i) && space.bodies.at(i).cbType && space.bodies.at(i).cbType.userData)
+						if (space.bodies.at(i).cbType.userData == "rightPlayer")
 					{
 						space.bodies.at(i).velocity.x = 0;
 						//brpStop();
@@ -414,15 +419,16 @@ package
 		
 		public function antiheroStop():void	{
 			for (var i:int = 0; i < space.bodies.length; ++i)
-				{	
-					if (space.bodies.at(i).cbType.userData == "leftPlayer")
+				{
+					if(space.bodies.at(i) && space.bodies.at(i).cbType && space.bodies.at(i).cbType.userData)
+						if (space.bodies.at(i).cbType.userData == "leftPlayer")
 					{
 						space.bodies.at(i).velocity.x = 0;
 					}
 				}
 		}
-		
-		
+
+
 		//прыжок правого игрока
 		public function heroJump():void { 
 			for (var j:int = 0; j < space.bodies.length; ++j)
@@ -513,7 +519,13 @@ package
 			walls.shapes.add(new Polygon(Polygon.rect( -Main.stageWidth, -Main.stageHeight * 2, Main.stageWidth - 1, Main.stageHeight * 3), material));
 			walls.shapes.add(new Polygon(Polygon.rect( Main.stageWidth, -Main.stageHeight * 2, Main.stageWidth, Main.stageHeight * 3), material));
 			walls.shapes.add(new Polygon(Polygon.rect( Main.stageWidth / 2 - 5, Main.stageHeight / 2, 10, Main.stageHeight / 2), material)); 
+
+			var cbType : CbType = new CbType();
+			cbType.userData = "wall";
+			walls.cbType = cbType;
+
 			walls.space = space;
+
 			return walls;
 		}
 		

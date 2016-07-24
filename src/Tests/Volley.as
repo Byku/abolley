@@ -38,7 +38,7 @@ package Tests
 		public static const SIT_ATTACK:String = "sitHit";
 		
 		private var bodyRadius:int = 30;
-		private var ballSprite:Sprite;
+		private var ballFinder:MovieClip;
 		
 		private var timer4goal:Timer;
 		private var netArray:Array;
@@ -80,7 +80,7 @@ package Tests
 		private var bitmapHR:Bitmap;
 		private var bitmapHL:Bitmap;
 		//картинка мяча
-		private var bitmapBall:Bitmap;
+		private var bitmapBall:Sprite;
 		
 		//ограничитель частых касаний. если равно 0, то можно засчтывать касание игроком мяча
 		private var limiterOftenTouch:int = 0;
@@ -124,9 +124,6 @@ package Tests
 		private var ldrTabloDigitRightOne:Loader;
 		private var tabloDigitRightOneM:MovieClip;
 		
-		//TODO: сделать константу для домена, чтобы писать domain/aeba.swf
-		
-		
 		public function Volley() 
 		{
 			super("Volley");
@@ -138,6 +135,9 @@ package Tests
 			RPlayerOnFloor = false;
 			isLeftPlayerAttacked = false;
 			isRightPlayerAttacked = false;
+
+			ballFinder = new BallFinder();
+			overlaySprite.addChild(ballFinder);
 //////////////////////////////////////////////////////создаем тестовую ауру//////////////////
 //			bodyAura = new Body(BodyType.KINEMATIC, new Vec2(200, 200));
 //			bodyAura.shapes.add(new Circle(50, new Vec2(0, 0), Material.glass(), filter1));
@@ -147,6 +147,9 @@ package Tests
 //////////////////////////////////////////////////////создаем слой, который определит касание пола мячом//////////////
 			bodyKinematicFloor = new Body(BodyType.KINEMATIC, new Vec2(0, 379));
 			bodyKinematicFloor.shapes.add(new Polygon(Polygon.rect(0, 0, 640, 1), Material.steel(), filterFloor));
+			var cbType : CbType = new CbType();
+			cbType.userData = "floor";
+			bodyKinematicFloor.cbType = cbType;
 			bodyKinematicFloor.space = space;
 
 //////////////////////////////////////////////////////кончили создавать слой, который определит касание пола мячом//////////////
@@ -180,10 +183,14 @@ package Tests
 			bodyLeftPlayer.space = space;
 /////////////////////////////////////////////////////кончили создавать левого игрока//////////
 //////////////////////load and attach skin to left Player/////////////////////////////////////
-			var blpRequest:URLRequest = new URLRequest(domenName + "aebaL.swf");
-			ldrBLP = new Loader();
-			ldrBLP.contentLoaderInfo.addEventListener(Event.COMPLETE, blpLoaderComplete);
-			ldrBLP.load(blpRequest);
+//			var blpRequest:URLRequest = new URLRequest(domenName + "aebaL.swf");
+//			ldrBLP = new Loader();
+//			// todo change
+//			ldrBLP.contentLoaderInfo.addEventListener(Event.COMPLETE, blpLoaderComplete);
+//			ldrBLP.load(blpRequest);
+
+			blpM = new  player_left();
+			overlaySprite.addChild(blpM);
 //////////////////////end of load and attach skin to left Player//////////////////////////////
 /////////////////////////////////////////////////////создаем правого игрока///////////////////
 			bodyRightPlayer = new Body(BodyType.DYNAMIC, new Vec2(450, 150));
@@ -201,10 +208,12 @@ package Tests
 			bodyRightPlayer.space = space;
 /////////////////////////////////////////////////////кончили создавать правого игрока//////////
 /////////////////////////////загружаем и прикрепляем внешность правого игрока//////////////////
-			var brpRequest:URLRequest = new URLRequest(domenName + "aebaR.swf");
-			ldrBRP = new Loader();
-			ldrBRP.contentLoaderInfo.addEventListener(Event.COMPLETE, brpLoaderComplete);
-			ldrBRP.load(brpRequest);
+//			var brpRequest:URLRequest = new URLRequest(domenName + "aebaR.swf");
+//			ldrBRP = new Loader();
+//			ldrBRP.contentLoaderInfo.addEventListener(Event.COMPLETE, brpLoaderComplete);
+//			ldrBRP.load(brpRequest);
+			brpM = new  player_right();
+			overlaySprite.addChild(brpM);
 /////////////////////////////кончили прикреплять внешность правого игрока//////////////////////
 		}
 
@@ -385,7 +394,7 @@ package Tests
 		
 		override public function update():void
 		{
-			//trace (bitmapBall.x, bitmapBall.y)
+//			trace (bitmapBall.x, bitmapBall.y)
 			//trace(leftTouchCounter + " " + rightTouchCounter + " limit: " + limiterOftenTouch);
 			//trace(limiterOftenTouch);
 			isBallInLeftAura = false;
@@ -407,19 +416,23 @@ package Tests
 //			bitmapHL.y = pt_.y - 25;
 			
 		//	var ballPt:Vec2 = body.localToWorld(bitmapBallPt);
-			bitmapBall.x = body.position.x - bodyRadius * Math.cos(body.rotation) + bodyRadius * Math.sin(body.rotation);
-			bitmapBall.y = body.position.y - bodyRadius * Math.sin(body.rotation) - bodyRadius * Math.cos(body.rotation);
+			bitmapBall.x = body.position.x //- bodyRadius * Math.cos(body.rotation) + bodyRadius * Math.sin(body.rotation);
+			bitmapBall.y = body.position.y //- bodyRadius * Math.sin(body.rotation) - bodyRadius * Math.cos(body.rotation);
 			bitmapBall.rotation = body.rotation * 180 / Math.PI;
+
+			 ballFinder.visible = (bitmapBall.y < 0);
+			ballFinder.x = bitmapBall.x;
+
 			
 				
 			if (brpM) {
-				brpM.x = bodyRightPlayer.position.x - 55;
-				brpM.y = bodyRightPlayer.position.y - 60;
+				brpM.x = bodyRightPlayer.position.x// - 55;
+				brpM.y = bodyRightPlayer.position.y - 10;
 			}
 					
 			if (blpM) {
-				blpM.x = bodyLeftPlayer.position.x - 55;
-				blpM.y = bodyLeftPlayer.position.y - 60;
+				blpM.x = bodyLeftPlayer.position.x// - 55;
+				blpM.y = bodyLeftPlayer.position.y - 20;
 			}
 
 				
@@ -826,7 +839,8 @@ package Tests
 			//trace (RPlayerOnFloor);
 			//trace (LPlayerOnFloor);
 			//if (RPlayerOnFloor && LPlayerOnFloor) {
-			for (var i:int = 0; i < space.bodies.length; ++i){		
+			for (var i:int = 0; i < space.bodies.length; ++i){
+				if(space.bodies.at(i) && space.bodies.at(i).cbType && space.bodies.at(i).cbType.userData)
 				if (space.bodies.at(i).cbType.userData == "ball"){
 					space.bodies.at(i).position.y = 200;
 					space.bodies.at(i).position.x = x_;
@@ -851,70 +865,41 @@ package Tests
 
 			var backgroundBitmap:BitmapData = (new GFX.BackgroundSprite()).bitmapData;
 			bitmap = new Bitmap(backgroundBitmap);
-			bitmap.y = 0;
-			bitmap.alpha = 1; //0.3 для тестов
-			overlaySprite.addChild(bitmap);
+			
+//			var ballBitmap:BitmapData = (new GFX.BallSprite()).bitmapData;
+			bitmapBall = new Ball();
+			tabloDigitLeftOneM = new tableNumbers();
+			tabloDigitLeftTenM = new tableNumbers();
+			tabloDigitRightTenM = new tableNumbers();
+			tabloDigitRightOneM = new tableNumbers();
 
-			
-			var ballBitmap:BitmapData = (new GFX.BallSprite()).bitmapData;
-			bitmapBall = new Bitmap(ballBitmap);
-			overlaySprite.addChild(bitmapBall);
+			layout();
+			addChildren();
+		}
 
-			var tabloDigitLeftTenRequest:URLRequest = new URLRequest(domenName + "digit.swf");
-			ldrTabloDigitLeftTen= new Loader();
-			ldrTabloDigitLeftTen.contentLoaderInfo.addEventListener(Event.COMPLETE, tabloDigitLeftTenLoaderComplete);
-			ldrTabloDigitLeftTen.load(tabloDigitLeftTenRequest );
-			
-			var tabloDigitLeftOneRequest:URLRequest = new URLRequest(domenName + "digit.swf");
-			ldrTabloDigitLeftOne = new Loader();
-			ldrTabloDigitLeftOne.contentLoaderInfo.addEventListener(Event.COMPLETE, tabloDigitLeftOneLoaderComplete);
-			ldrTabloDigitLeftOne.load(tabloDigitLeftOneRequest);
-			
-			var tabloDigitRightTenRequest:URLRequest = new URLRequest(domenName + "digit.swf");
-			ldrTabloDigitRightTen= new Loader();
-			ldrTabloDigitRightTen.contentLoaderInfo.addEventListener(Event.COMPLETE, tabloDigitRightTenLoaderComplete);
-			ldrTabloDigitRightTen.load(tabloDigitRightTenRequest);
-			
-			var tabloDigitRightOneRequest:URLRequest = new URLRequest(domenName + "digit.swf");
-			ldrTabloDigitRightOne = new Loader();
-			ldrTabloDigitRightOne.contentLoaderInfo.addEventListener(Event.COMPLETE, tabloDigitRightOneLoaderComplete);
-			ldrTabloDigitRightOne.load(tabloDigitRightOneRequest);
-		}
-		
-		private function tabloDigitLeftTenLoaderComplete(e:Event):void 
-		{
-			tabloDigitLeftTenM = e.target.content;
-			overlaySprite.addChildAt(tabloDigitLeftTenM, 1);
-			tabloDigitLeftTenM.stop();
-			tabloDigitLeftTenM.y = 50;
-			tabloDigitLeftTenM.x = 195;
-		}
-		
-		private function tabloDigitLeftOneLoaderComplete(e:Event):void 
-		{
-			tabloDigitLeftOneM = e.target.content;
-			overlaySprite.addChildAt(tabloDigitLeftOneM, 1);
-			tabloDigitLeftOneM.stop();
-			tabloDigitLeftOneM.x = 255;
-			tabloDigitLeftOneM.y = 50;
-		}
-		
-		private function tabloDigitRightTenLoaderComplete(e:Event):void 
-		{
-			tabloDigitRightTenM = e.target.content;
-			overlaySprite.addChildAt(tabloDigitRightTenM, 1);
-			tabloDigitRightTenM.stop();
-			tabloDigitRightTenM.x = 340;
-			tabloDigitRightTenM.y = 50;
-		}
-		
-		private function tabloDigitRightOneLoaderComplete(e:Event):void 
-		{
-			tabloDigitRightOneM = e.target.content;
-			overlaySprite.addChildAt(tabloDigitRightOneM, 1);
-			tabloDigitRightOneM.stop();
-			tabloDigitRightOneM.x = 400;
-			tabloDigitRightOneM.y = 50;
-		}
+	private function addChildren(): void {
+		overlaySprite.addChild(bitmap);
+		overlaySprite.addChild(bitmapBall);
+		overlaySprite.addChildAt(tabloDigitLeftTenM, 1);
+		overlaySprite.addChildAt(tabloDigitLeftOneM, 1);
+		overlaySprite.addChildAt(tabloDigitRightTenM, 1);
+		overlaySprite.addChildAt(tabloDigitRightOneM, 1);
+
+	}
+
+	private function layout(): void {
+		bitmap.y = 0;
+		bitmap.alpha = 1; //0.3 для тестов
+
+
+		tabloDigitLeftOneM.x = 280;
+		tabloDigitLeftOneM.y = 100;
+		tabloDigitLeftTenM.y = 100;
+		tabloDigitLeftTenM.x = 220;
+		tabloDigitRightOneM.x = 425;
+		tabloDigitRightOneM.y = 100;
+		tabloDigitRightTenM.x = 365;
+		tabloDigitRightTenM.y = 100;
+	}
 	}
 }

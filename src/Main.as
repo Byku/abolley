@@ -10,8 +10,8 @@
 	import nape.util.*;
 	import Tests.*;
 	import flash.system.Security;
-	
-	
+
+	[SWF(width="640", height="480", backgroundColor="#000000", frameRate="30")]
 	public class Main extends Sprite
 	{
 		public static const FPS:Number = 60;
