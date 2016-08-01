@@ -327,7 +327,8 @@
 		private function closeHowtoPlayListener(e:MouseEvent):void 
 		{
 			backButtonSprite.removeEventListener(MouseEvent.CLICK, closeHowtoPlayListener);
-			removeChild(backButtonSprite);
+			// todo if game is on - backbutton should return us to game and do not disappear
+			if(backButtonSprite.parent)removeChild(backButtonSprite);
 			howtoPlayBackgroundSprite.removeEventListener(MouseEvent.CLICK, closeHowtoPlayListener);
 			removeChild(howtoPlayBackgroundSprite);
 			startAllListener();
@@ -490,11 +491,11 @@
 		
 		private function createUI():void
 		{
-			new FPSMeter(this, stageWidth - 40,0,"фпс");
-			
+//			new FPSMeter(this, stageWidth - 40,0,"фпс");
+
 			var vbox:VBox = new VBox(this);
 			var hbox:HBox = new HBox(vbox);
-			
+
 			testNameLabel = new Label(this);
 			testNameLabel.x = (stageWidth - testNameLabel.width) / 2;
 			
@@ -506,17 +507,6 @@
 					showBackButton();
 				});
 			b.width = 60;
-			/*b = new PushButton(hbox, 0, 0, "prev", function(e:Event):void
-				{
-					setTest((tests.length + currentTest - 1) % tests.length);
-				});
-			b.width = 40
-			b = new PushButton(hbox, 0, 0, "reset", function(e:Event):void
-				{
-					setTest(currentTest);
-				});
-			b.width = 40;
-			*/	
 			testUI = new VBox(vbox);
 			
 		}

@@ -394,7 +394,8 @@ package Tests
 		
 		override public function update():void
 		{
-//			trace (bitmapBall.x, bitmapBall.y)
+
+//			trace (ballFinder.alpha, bitmapBall.y, showFinderY);
 			//trace(leftTouchCounter + " " + rightTouchCounter + " limit: " + limiterOftenTouch);
 			//trace(limiterOftenTouch);
 			isBallInLeftAura = false;
@@ -420,7 +421,9 @@ package Tests
 			bitmapBall.y = body.position.y //- bodyRadius * Math.sin(body.rotation) - bodyRadius * Math.cos(body.rotation);
 			bitmapBall.rotation = body.rotation * 180 / Math.PI;
 
-			 ballFinder.visible = (bitmapBall.y < 0);
+			var showFinderY: Number = 0 - bitmapBall.height * .5;
+			var finderAlpha: Number = (showFinderY - bitmapBall.y) / 230;
+			ballFinder.scaleY = ballFinder.alpha = (finderAlpha < 0) ? 0 : (finderAlpha > 1) ? 1 : finderAlpha;
 			ballFinder.x = bitmapBall.x;
 
 			
@@ -432,7 +435,7 @@ package Tests
 					
 			if (blpM) {
 				blpM.x = bodyLeftPlayer.position.x// - 55;
-				blpM.y = bodyLeftPlayer.position.y - 20;
+				blpM.y = bodyLeftPlayer.position.y - 10;
 			}
 
 				
